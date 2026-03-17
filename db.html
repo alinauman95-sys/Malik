@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Malik Database</title>
+    <style>
+        :root { --green: #28a745; --dark-bg: #0b0b0b; --text: #eee; }
+        body { font-family: sans-serif; background: var(--dark-bg); color: var(--text); padding: 15px; }
+        .s-bar { width: 100%; padding: 15px; background: #1a1a1a; border: 2px solid var(--green); border-radius: 12px; color: #fff; margin-bottom: 15px; box-sizing: border-box; }
+        .res-item { background: #161616; padding: 15px; border-radius: 10px; margin-bottom: 8px; border-left: 4px solid var(--green); display: flex; justify-content: space-between; }
+        .g-box { margin-top: 20px; padding: 15px; background: #111; border: 1px solid #333; border-radius: 10px; font-size: 14px; }
+    </style>
+</head>
+<body>
+<div style="display:flex; justify-content:space-between; align-items:center;">
+    <h2 style="color:var(--green);">VERIFIED DB</h2>
+    <a href="index.html" style="color:#888; text-decoration:none; border:1px solid #444; padding:5px 10px; border-radius:5px;">HOME</a>
+</div>
+<input type="text" id="inp" class="s-bar" placeholder="Enter IC (KLUDG, H9, JZ)..." onkeyup="find()">
+<div id="res"></div>
+<div class="g-box">
+    <h3 style="color:var(--green); margin-top:0;">Decoding Guide:</h3>
+    <b>Samsung:</b> 4th Letter (B=32G, D=128G)<br>
+    <b>Hynix:</b> Q=128G, R=256G
+</div>
+<script>
+    const data = [{c:"KLUBG",t:"32GB UFS"},{c:"KLUDG",t:"128GB UFS"},{c:"H9QT",t:"128GB uMCP"},{c:"H9RT",t:"256GB uMCP"}];
+    function find(){
+        let v=document.getElementById('inp').value.toUpperCase();
+        document.getElementById('res').innerHTML = data.filter(i=>v.length>1 && i.c.includes(v)).map(i=>`<div class="res-item"><span>${i.c}</span><span style="color:var(--green)">${i.t}</span></div>`).join('');
+    }
+</script>
+</body>
+</html>
