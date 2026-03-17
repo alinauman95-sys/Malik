@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Malik IC Master - Final V6</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        :root { --green: #28a745; --dark-bg: #000; --card-bg: #111; --text: #fff; }
+        body { font-family: sans-serif; background: var(--dark-bg); color: var(--text); margin: 0; padding: 5px; }
+        .container { max-width: 450px; margin: auto; }
+        .bill-card { background: var(--card-bg); border: 1px solid #333; border-radius: 12px; padding: 15px; }
+        .header { text-align: center; border-bottom: 2px solid var(--green); margin-bottom: 12px; padding-bottom: 10px; }
+        .header h1 { color: var(--green); margin: 0; font-size: 22px; }
+        .stats-bar { background: var(--green); display: flex; justify-content: space-between; padding: 12px; border-radius: 8px; margin: 10px 0; font-weight: bold; color: #000; }
+        .table-head { display: flex; background: #222; padding: 10px 8px; font-size: 10px; font-weight: bold; border-radius: 5px; }
+        .bill-row { display: flex; padding: 8px 8px; border-bottom: 1px solid #222; background: #1a1a1a; margin-top: 2px; align-items: center; }
+        .c-ic { flex: 2.5; font-size: 11px; }
+        .c-qty { flex: 0.5; text-align: center; font-size: 11px; }
+        .c-total { flex: 1.2; text-align: right; color: var(--green); font-weight: bold; font-size: 11px; }
+        .btn-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin: 10px 0; }
+        .btn { border: none; border-radius: 6px; color: #fff; font-weight: bold; font-size: 10px; height: 38px; cursor: pointer; text-transform: uppercase; }
+        .btn-blue { background: #007bff; }
+        .btn-dark { background: #333; }
+        .btn-red { background: #dc3545; }
+        .btn-add { background: var(--green); width: 100%; height: 50px; border-radius: 10px; font-size: 16px; margin-top: 10px; color: #fff; font-weight: bold; border: none; }
+        .box-input { background: #1a1a1a; border: 1px solid #333; width: 100%; color: #fff; padding: 10px; border-radius: 8px; box-sizing: border-box; outline: none; text-align: center; }
+        #dbOverlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:#000; z-index:1000; padding:15px; box-sizing:border-box; overflow-y:auto; }
+        .search-item { padding: 12px; border-bottom: 1px solid #222; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+        .type-tag { font-size: 9px; background: #444; padding: 3px 6px; border-radius: 4px; color: var(--green); }
+    </style>
+</head>
+<body>
+
+<div id="dbOverlay">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h2 style="color:var(--green); font-size:18px;">A to Z IC DATABASE</h2>
+        <button onclick="closeDB()" class="btn btn-red" style="padding:0 15px; height:30px;">X</button>
+    </div>
+    <input type="text" id="dbSearch" class="box-input" style="margin-top:15px; text-align:left; border:1px solid var(--green);" placeholder="Search (JZ, H9QT, KLUD, EMMC)..." onkeyup="filterDB()">
+    <div id="dbResults"></div>
+</div>
+
+<div class="container">
+    <div id="captureArea">
+        <div class="bill-card">
+            <div class="header">
+                <h1>MALIK IC MASTER</h1>
+                <p style="font-size:11px; margin:5px 0; color:#aaa;">Pakpattan Market specialist | 0301-4243420</p>
+            </div>
+            <div class="table-head">
+                <span style="flex:2.5;">IC DESCRIPTION</span>
+                <span style="flex:0.5; text-align:center;">QTY</span>
+                <span style="flex:1.2; text-align:right;">TOTAL</span>
+            </div>
+            <div id="itemsBody"></div>
+            <div class="stats-bar">
+                <span>PCS: <span id="finalQty">0</span></span>
+                <span>PKR: <span id="finalTotal">0</span></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="btn-grid">
+        <button class="btn btn-blue" onclick="quickSet('4GB')">4GB</button>
+        <button class="btn btn-blue" onclick="quickSet('8GB')">8GB</button>
+        <button class="btn btn-blue" onclick="quickSet('16GB')">16GB</button>
+        <button class="btn btn-blue" onclick="quickSet('32GB')">32GB</button>
+        <button class="btn btn-blue" onclick="quickSet('64GB')">64GB</button>
+        <button class="btn btn-blue" onclick="quickSet('128GB')">128G</button>
+        <button class="btn btn-blue" onclick="quickSet('256GB')">256G</button>
+        <button class="btn btn-blue" onclick="quickSet('512GB')">512G</button>
+        <button class="btn btn-dark" onclick="quickSet('EMMC')">EMMC</button>
+        <button class="btn btn-dark" onclick="quickSet('UFS')">UFS</button>
+        <button class="btn btn-dark" onclick="quickSet('CPU')">CPU</button>
+        <button class="btn btn-dark" onclick="quickSet('RAM')">RAM</button>
+        <button class="btn btn-dark" onclick="quickSet('Hard')">Hard</button>
+        <button class="btn btn-dark" onclick="quickSet('Nokia')">Nokia</button>
+        <button class="btn btn-dark" onclick="quickSet('China')">China</button>
+        <button class="btn btn-red" onclick="quickSet('Numberi')">Numberi</button>
+    </div>
+
+    <div style="display:grid; grid-template-columns: 1.8fr 0.8fr 1.2fr; gap:5px;">
+        <input type="text" id="icInp" class="box-input" placeholder="SEARCH DATABASE" onclick="openDB()" readonly style="font-size:10px;">
+        <input type="number" id="qtyInp" class="box-input" value="1">
+        <input type="number" id="rateInp" class="box-input" placeholder="RATE">
+    </div>
+
+    <button class="btn-add" onclick="addItem()">+ ADD TO BILL</button>
+    <button class="btn" style="width:100%; background:#f39c12; margin-top:10px; height:45px; border:none; border-radius:10px; color:#fff; font-weight:bold;" onclick="saveImage()">SAVE BILL IMAGE</button>
+</div>
+
+<script>
+    const database = [
+        // --- HYNIX (Verified) ---
+        { code: "H9QT", type: "128GB uMCP (Hynix)" },
+        { code: "H9RT", type: "256GB uMCP (Hynix)" },
+        { code: "H9HQ", type: "64GB eMCP (Hynix)" },
+        { code: "H9TQ", type: "32GB eMCP (Hynix)" },
+        { code: "H9TP", type: "4GB/8GB eMCP (Hynix)" },
+
+        // --- MICRON (Verified) ---
+        { code: "JZ386", type: "32GB+2GB (Micron)" },
+        { code: "JW963", type: "64GB+4GB (Micron)" },
+        { code: "JY941", type: "32GB+3GB (Micron)" },
+        { code: "JZ328", type: "16GB+2GB (Micron)" },
+        { code: "MTFC", type: "eMMC Series (Micron)" },
+
+        // --- SAMSUNG (Verified) ---
+        { code: "KLUDG", type: "128GB UFS (Samsung)" },
+        { code: "KLUCG", type: "64GB UFS (Samsung)" },
+        { code: "KLUEG", type: "256GB UFS (Samsung)" },
+        { code: "KMRX", type: "32GB+3GB (Samsung)" },
+        { code: "KMV60", type: "64GB+4GB (Samsung)" },
+        { code: "KMQE1", type: "16GB+2GB (Samsung)" },
+        { code: "KMQ72", type: "8GB+1GB (Samsung)" },
+        { code: "KMKJS", type: "4GB (Samsung)" },
+        
+        // --- CHINESE/BUDGET (Verified) ---
+        { code: "EMMC16", type: "16GB (Kingston)" },
+        { code: "EMMC32", type: "32GB (Kingston)" },
+        { code: "EMMC64", type: "64GB (Kingston)" },
+        { code: "FESP", type: "16GB/32GB (Foresee)" },
+        { code: "FEMDR", type: "32GB/64GB (Foresee)" },
+
+        // --- OTHERS ---
+        { code: "SDIN", type: "Sandisk Series" },
+        { code: "THGAF", type: "Toshiba UFS Series" }
+    ];
+
+    let listItems = [];
+    function openDB() { document.getElementById('dbOverlay').style.display = 'block'; document.getElementById('dbSearch').focus(); }
+    function closeDB() { document.getElementById('dbOverlay').style.display = 'none'; }
+    function quickSet(v) { document.getElementById('icInp').value = v; }
+
+    function filterDB() {
+        let term = document.getElementById('dbSearch').value.toUpperCase();
+        if(term.length < 2) return;
+        let results = database.filter(i => i.code.includes(term));
+        document.getElementById('dbResults').innerHTML = results.map(i => `
+            <div class="search-item" onclick="pick('${i.code} [${i.type}]')">
+                <span>${i.code}</span><span class="type-tag">${i.type}</span>
+            </div>`).join('') || `<div class="search-item" onclick="pick('${term}')">ADD MANUAL: ${term}</div>`;
+    }
+
+    function pick(val) { document.getElementById('icInp').value = val; closeDB(); }
+
+    function addItem() {
+        let ic = document.getElementById('icInp').value, q = parseFloat(document.getElementById('qtyInp').value), r = parseFloat(document.getElementById('rateInp').value);
+        if(!ic || isNaN(r)) return;
+        listItems.push({ic, q, r});
+        update();
+        document.getElementById('icInp').value = ""; document.getElementById('rateInp').value = "";
+    }
+
+    function update() {
+        let body = document.getElementById('itemsBody'), tQ = 0, tT = 0;
+        body.innerHTML = listItems.map(i => {
+            let total = i.q * i.r; tQ += i.q; tT += total;
+            return `<div class="bill-row"><span class="c-ic">${i.ic}</span><span class="c-qty">${i.q}</span><span class="c-total">${total}</span></div>`;
+        }).join('');
+        document.getElementById('finalQty').innerText = tQ;
+        document.getElementById('finalTotal').innerText = tT.toLocaleString();
+    }
+
+    function saveImage() {
+        html2canvas(document.querySelector("#captureArea"), {backgroundColor: "#000"}).then(canvas => {
+            let a = document.createElement('a'); a.href = canvas.toDataURL(); a.download = 'Malik_IC_Bill.png'; a.click();
+        });
+    }
+</script>
+</body>
+</html>
