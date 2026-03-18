@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Malik Rizwan Scrap App</title>
+    
+    <!-- html2canvas Library (یہ رسید کی تصویر بنانے کے لیے ضروری ہے) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Arial, sans-serif; }
+        
+        body { 
+            background-color: #f1f5f9; 
+            color: #1e293b;
+            height: 100dvh; 
+            display: flex;
+            flex-direction: column;
+            overflow: hidden; 
+            padding: 8px;
+        }
+
+        .app-container { 
+            background: #ffffff; 
+            border-radius: 8px; 
+            padding: 10px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1); 
+            display: flex;
+            flex-direction: column;
+            flex: 1; 
+            gap: 8px; 
+        }
+
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 5px; }
+        .header h1 { font-size: 16px; color: #0f172a; text-transform: uppercase; margin:0; font-weight: 800;}
+        .header-info { font-size: 11px; color: #64748b; text-align: right; font-weight: bold; }
+
+        .input-row { display: flex; gap: 5px; width: 100%; }
+        
+        input, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #94a3b8;
+            border-radius: 4px;
+            font-size: 15px !important; 
+            background: #f8fafc;
+            outline: none;
+            height: 38px;
+        }
+        
+        .btn-add { 
+            background-color: #16a34a; 
+            color: white; 
+            border: none; 
+            border-radius: 4px; 
+            font-weight: bold; 
+            width: 80px; 
+            cursor: pointer;
+        }
+        .btn-add:active { background-color: #15803d; }
+
+        .table-wrapper {
+            flex: 1; 
+            overflow-y: auto; 
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+            background: white;
+        }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th { 
+            background-color: #1e293b; 
+            color: white; 
+            position: sticky; 
+            top: 0; 
+            padding: 6px 4px; 
+            font-size: 12px;
+            z-index: 10;
+        }
+        td { padding: 6px 4px; border-bottom: 1px solid #e2e8f0; text-align: center; }
+        td.item-name { text-align: left; font-family: 'Jameel Noori Nastaleeq', Arial; direction: rtl; font-size: 14px;}
+        .btn-del { background: #ef4444; color: white; border: none; padding: 4px 6px; border-radius: 4px; font-size: 11px; }
+
+        .bottom-section { display: flex; flex-direction: column; gap: 5px; }
+        
+        .total-box {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            padding: 8px 10px;
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .total-box span { font-size: 13px; font-weight: bold; color: #1e3a8a; }
+        .total-box h2 { font-size: 20px; color: #1d4ed8; margin: 0; }
+
+        .action-btns { display: flex; gap: 5px; }
+        .btn { padding: 10px 4px; border: none; border-radius: 4px; font-size: 13px; font-weight: bold; color: white; cursor: pointer; flex: 1; text-align: center;}
+        
+        .btn-clear { background-color: #64748b; }
+        .btn-image { background-color: #059669; }
+        .btn-print { background-color: #2563eb; }
+
+        @media print {
+            body { height: auto; overflow: visible; padding: 0; background: white;}
+            .app-container { box-shadow: none; border: none; padding: 0; display: block; }
+            .no-print { display: none !important; }
+            .table-wrapper { border: none; overflow: visible; height: auto !important; }
+            .total-box { border: 1px solid #000; background: transparent; }
+            th { background-color: #f1f1f1 !important; color: #000 !important; position: static; }
+        }
+
+        .capture-mode { height: auto !important; overflow: visible !important; padding: 0 !important; background: white !important; }
+        .capture-mode .app-container { height: auto !important; box-shadow: none; border: none; padding: 10px; }
+        .capture-mode .no-print { display: none !important; }
+        .capture-mode .table-wrapper { overflow: visible !important; height: auto !important; flex: none; border: none;}
+        .capture-mode th { position: static; background-color: #f1f1f1 !important; color: #000 !important; border-bottom: 2px solid #000;}
+        .capture-mode td { border-bottom: 1px solid #000; }
+        .capture-mode .total-box { border: 2px solid #000; background: transparent; }
+    </style>
+</head>
+<body>
+
+<div class="app-container" id="receiptArea">
+    
+    <!-- Header -->
+    <div class="header">
+        <h1></h1>
+        <div class="header-info">
+            <span id="currentDate"></span><br>
+            <span style="color:#2563eb;">Bill No: <span id="billNo">---</span></span>
+        </div>
+    </div>
+
+    <!-- Details for Print & Image -->
+    <div style="font-size: 13px; font-weight: bold; border-bottom: 1px dashed #cbd5e1; padding-bottom: 4px; display: none;" id="printCustArea">
+        Name: <span id="displayCustomer">Cash / نقد</span>
+    </div>
+
+    <!-- Inputs Area -->
+    <div class="no-print" style="display: flex; flex-direction: column; gap: 5px;">
+        <input type="text" id="customerName" placeholder="Customer Name (گاہک کا نام)">
+        
+        <div class="input-row">
+            <select id="itemType" style="flex: 1; direction: rtl; font-family: 'Jameel Noori Nastaleeq', Arial;">
+                <option value="آرمیچر (Armature)">آرمیچر (Armature)</option>
+                <option value="دیسی تانبا (Desi Tamba)">دیسی تانبا (Desi Tamba)</option>
+                <option value="کورا تانبا (Kora Tamba)">کورا تانبا (Kora Tamba)</option>
+                <option value="پیتل (Brass)">پیتل (Brass)</option>
+                <option value="سلور (Aluminium)">سلور (Aluminium)</option>
+                <option value="بیٹری (Battery)">بیٹری (Battery)</option>
+                <option value="موٹریں (Motors)">موٹریں (Motors)</option>
+                <option value="کمپریسر (Compressor)">کمپریسر (Compressor)</option>
+                <option value="لوہا (Iron)">لوہا (Iron)</option>
+                <option value="ردی (Raddi)">ردی (Raddi)</option>
+                <option value="کاپیاں (Copies / Books)">کاپیاں (Copies / Books)</option>
+                <option value="اخبار (Newspaper)">اخبار (Newspaper)</option>
+                <option value="گتہ (Cardboard)">گتہ (Cardboard)</option>
+                <option value="پلاسٹک/بوتلیں (Plastic/Bottles)">پلاسٹک/بوتلیں (Plastic/Bottles)</option>
+                <option value="دیگر (Other)">دیگر (Other...)</option>
+            </select>
+        </div>
+
+        <div class="input-row">
+            <input type="number" id="weight" placeholder="W (وزن)" style="flex: 1;" inputmode="decimal">
+            <input type="number" id="rate" placeholder="Rate (ریٹ)" style="flex: 1;" inputmode="decimal">
+            <button class="btn-add" onclick="addItem()">➕ ADD</button>
+        </div>
+    </div>
+
+    <!-- Scrollable Table -->
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th style="text-align: left;">Item (آئٹم)</th>
+                    <th>W (وزن)</th>
+                    <th>Rate</th>
+                    <th>Total (کل)</th>
+                    <th class="no-print">❌</th>
+                </tr>
+            </thead>
+            <tbody id="billTableBody">
+                <!-- Items list -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Fixed Bottom Section -->
+    <div class="bottom-section">
+        <div class="total-box">
+            <span>Grand Total (کل بل)</span>
+            <h2>RS <span id="grandTotal">0</span></h2>
+        </div>
+
+        <div class="action-btns no-print">
+            <button class="btn btn-clear" onclick="clearBill()">🔄 New</button>
+            <button class="btn btn-image" onclick="saveAsImage()">📸 Save Image</button>
+            <button class="btn btn-print" onclick="printBill()">🖨️ Print</button>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    document.getElementById("currentDate").innerText = new Date().toLocaleDateString('en-GB');
+    document.getElementById("billNo").innerText = Math.floor(1000 + Math.random() * 9000);
+
+    let billItems = [];
+
+    document.getElementById("customerName").addEventListener("input", function() {
+        let name = this.value.trim();
+        document.getElementById("displayCustomer").innerText = name === "" ? "Cash / نقد" : name;
+        document.getElementById("printCustArea").style.display = "block";
+    });
+
+    function addItem() {
+        let item = document.getElementById("itemType").value;
+        let weight = parseFloat(document.getElementById("weight").value);
+        let rate = parseFloat(document.getElementById("rate").value);
+
+        if(!weight || !rate || weight <= 0 || rate <= 0) {
+            alert("Please enter Weight & Rate! (پہلے وزن اور ریٹ لکھیں)");
+            return;
+        }
+
+        let total = weight * rate;
+        billItems.push({ item, weight, rate, total });
+        
+        updateTable();
+        
+        document.getElementById("weight").value = '';
+        document.getElementById("rate").value = '';
+        document.getElementById("weight").focus();
+    }
+
+    function removeItem(index) {
+        billItems.splice(index, 1);
+        updateTable();
+    }
+
+    function updateTable() {
+        let tbody = document.getElementById("billTableBody");
+        tbody.innerHTML = "";
+        let grandTotal = 0;
+
+        if (billItems.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #94a3b8; padding: 15px;">No items</td></tr>`;
+            document.getElementById("printCustArea").style.display = document.getElementById("customerName").value ? "block" : "none";
+        } else {
+            document.getElementById("printCustArea").style.display = "block";
+        }
+
+        billItems.forEach((data, index) => {
+            grandTotal += data.total;
+            tbody.innerHTML += `<tr>
+                <td class="item-name">${data.item}</td>
+                <td style="font-weight: bold;">${data.weight}</td>
+                <td>${data.rate}</td>
+                <td style="color:#1d4ed8; font-weight: bold;">${Math.round(data.total).toLocaleString('en-IN')}</td>
+                <td class="no-print"><button class="btn-del" onclick="removeItem(${index})">X</button></td>
+            </tr>`;
+        });
+
+        document.getElementById("grandTotal").innerText = Math.round(grandTotal).toLocaleString('en-IN');
+        
+        let tableWrapper = document.querySelector('.table-wrapper');
+        tableWrapper.scrollTop = tableWrapper.scrollHeight;
+    }
+
+    function saveAsImage() {
+        if(billItems.length === 0) { alert("Add items to generate bill! (پہلے آئٹم شامل کریں)"); return; }
+        
+        let originalText = document.querySelector('.btn-image').innerText;
+        document.querySelector('.btn-image').innerText = "⏳ Saving...";
+
+        document.body.classList.add('capture-mode');
+
+        setTimeout(() => {
+            html2canvas(document.getElementById('receiptArea'), { scale: 2 }).then(canvas => {
+                let link = document.createElement('a');
+                link.download = 'Bill_' + document.getElementById("billNo").innerText + '.jpg';
+                link.href = canvas.toDataURL("image/jpeg", 0.9);
+                link.click();
+
+                document.body.classList.remove('capture-mode');
+                document.querySelector('.btn-image').innerText = originalText;
+            });
+        }, 300); 
+    }
+
+    function printBill() {
+        if(billItems.length === 0) { alert("Add items to print! (پہلے آئٹم شامل کریں)"); return; }
+        window.print();
+    }
+
+    function clearBill() {
+        if(confirm("Start a new bill? (نیا بل بنانا چاہتے ہیں؟)")) {
+            billItems = [];
+            document.getElementById("customerName").value = '';
+            document.getElementById("displayCustomer").innerText = 'Cash / نقد';
+            document.getElementById("printCustArea").style.display = "none";
+            document.getElementById("weight").value = '';
+            document.getElementById("rate").value = '';
+            document.getElementById("billNo").innerText = Math.floor(1000 + Math.random() * 9000); 
+            updateTable();
+        }
+    }
+
+    updateTable(); 
+</script>
+
+</body>
+</html>
