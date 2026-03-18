@@ -5,21 +5,31 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Malik Master - Home</title>
     <style>
-        :root { --green: #28a745; --dark-bg: #000; --card-bg: #111; --text: #fff; }
+        :root { --green: #28a745; --dark-bg: #000; --card-bg: #111; --text: #fff; --blue: #2563eb; }
         body { font-family: sans-serif; background: var(--dark-bg); color: var(--text); margin: 0; display: flex; align-items: center; justify-content: center; height: 100vh; text-align: center; }
-        .menu-card { width: 90%; max-width: 400px; padding: 25px; background: var(--card-bg); border-radius: 20px; border: 1px solid #333; }
-        h1 { color: var(--green); margin-bottom: 5px; }
-        .nav-btn { display: block; width: 100%; padding: 18px; margin-bottom: 15px; border-radius: 12px; font-size: 18px; font-weight: bold; text-decoration: none; box-sizing: border-box; }
-        .btn-1 { background: var(--green); color: #000; }
-        .btn-2 { background: #222; color: var(--green); border: 1px solid var(--green); }
+        .menu-container { width: 90%; max-width: 400px; padding: 25px; background: var(--card-bg); border-radius: 20px; border: 1px solid #333; }
+        h1 { color: var(--green); font-size: 28px; margin-bottom: 5px; }
+        .nav-btn { display: block; width: 100%; padding: 18px; margin-bottom: 12px; border-radius: 12px; font-size: 17px; font-weight: bold; text-decoration: none; box-sizing: border-box; transition: 0.3s; }
+        .btn-green { background: var(--green); color: #000; }
+        .btn-blue { background: var(--blue); color: #fff; }
+        .btn-outline { background: #111; color: var(--green); border: 1px solid var(--green); }
+        .nav-btn:active { transform: scale(0.95); }
     </style>
 </head>
 <body>
-<div class="menu-card">
+
+<div class="menu-container">
     <h1>MALIK MASTER</h1>
-    <p style="color:#888; margin-bottom:30px;">Pakpattan Verified IC System</p>
-    <a href="1ic.html" class="nav-btn btn-1">🧾 OPEN BILLING TOOL</a>
-    <a href="db.html" class="nav-btn btn-2">🔍 SEARCH DATABASE</a>
+    <p style="color:#888; font-size:13px; margin-bottom:25px;">Pakpattan | IC & Scrap Solutions</p>
+
+    <a href="1ic.html" class="nav-btn btn-green">🧾 IC BILLING TOOL</a>
+
+    <a href="scrap.html" class="nav-btn btn-blue">♻️ SCRAP BILLING APP</a>
+
+    <a href="db.html" class="nav-btn btn-outline">🔍 SEARCH IC DATABASE</a>
+
+    <div style="margin-top:20px; font-size:11px; color:#444;">0301-4243420</div>
 </div>
+
 </body>
 </html>
